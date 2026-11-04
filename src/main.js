@@ -18,7 +18,7 @@ window.addEventListener('load', function () {
     },
     scale: {
       mode: Phaser.Scale.FIT,               // giữ đúng tỷ lệ 9:16 trên mọi màn hình
-      autoCenter: Phaser.Scale.CENTER_BOTH
+      autoCenter: Phaser.Scale.NO_CENTER    // việc canh giữa do CSS flex đảm nhiệm (tránh lệch 2 lần)
     },
     input: {
       activePointers: 1

@@ -8,17 +8,12 @@ PF.BootScene = class BootScene extends Phaser.Scene {
   }
 
   create() {
-    var px = PF.CONFIG.PIXEL;
+    var C = PF.CONFIG;
     var S = PF.SPRITES;
     var self = this;
 
     function make(key, data, palette) {
-      self.textures.generate(key, {
-        data: data,
-        pixelWidth: px,
-        pixelHeight: px,
-        palette: palette
-      });
+      self.textures.generate(key, { data: data, pixelWidth: 1, pixelHeight: 1, palette: palette });
     }
 
     // Sprite dùng chung
@@ -26,12 +21,30 @@ PF.BootScene = class BootScene extends Phaser.Scene {
       make(key, S.fixed[key].data, S.fixed[key].palette);
     });
 
-    // Sprite riêng cho từng công nhân / khu làm việc
-    PF.CONFIG.WORKERS.forEach(function (w, i) {
-      make('worker_' + i, S.worker.data, PF.palettes.worker(w));
-      make('arm_' + i, S.arm.data, PF.palettes.arm(w));
-      make('wall_' + i, S.wall.data, PF.palettes.wall(w));
+    // Tường từng dây
+    C.ROW_WALLS.forEach(function (w, r) {
+      make('wall_' + r, S.fixed.wall.data, PF.palettes.wall(w));
     });
+
+    // Công nhân: mỗi người một tông da + màu tóc riêng, màu mũ/áo theo công đoạn
+    for (var r = 0; r < C.ROW_COUNT; r++) {
+      for (var s = 0; s < C.STAGES.length; s++) {
+        var n = r * C.STAGES.length + s;
+        var stage = C.STAGES[s];
+        var skin = C.SKINS[(n * 3 + r) % C.SKINS.length];
+        var hair = C.HAIRS[(n * 5 + s) % C.HAIRS.length];
+        var pal = PF.palettes.worker(stage, skin, hair);
+
+        make('arm_' + r + '_' + s, S.arm, PF.palettes.arm(stage, skin));
+        if (s < 5) {
+          make('worker_' + r + '_' + s, S.worker, pal);
+        } else {
+          // Công nhân vận chuyển đứng cả người, có 2 kiểu chân để bước đi
+          make('worker_' + r + '_' + s, S.carrierStand, pal);
+          make('worker_' + r + '_' + s + '_walk', S.carrierWalk, pal);
+        }
+      }
+    }
 
     this.scene.start('FactoryScene');
   }
